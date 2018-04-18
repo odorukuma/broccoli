@@ -1,7 +1,6 @@
 #include <iostream>
 #include <stdio.h>
- 
-// только для ASCII-слов
+
 int main(void) 
 {
     FILE* fp = fopen("test.txt", "w+t"); //создаем указатель на файл и тут же отрываем его функццией fopen (char *filename, char *mode); w+t - открытие для чтения и записи в текстовом режиме, если файл существует, то его содержимое теряется.

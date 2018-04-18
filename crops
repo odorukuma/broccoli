@@ -1,0 +1,89 @@
+#include <iostream>
+#include <stdio.h>
+ 
+// только для ASCII-слов
+int main(void) 
+{
+    FILE* fp = fopen("test.txt", "w+t"); //создаем указатель на файл и тут же отрываем его функццией fopen (char *filename, char *mode); w+t - открытие для чтения и записи в текстовом режиме, если файл существует, то его содержимое теряется.
+    if(fp == NULL) //проверили на доступ к файлу
+    {
+        printf("ERROR"); // сообщение об ошибке
+        return 0; // конец программы
+    }
+    fprintf(fp, "Hello world"); //записали
+    fclose(fp); // закрыли редактирование файла
+    fp = fopen("test.txt", "rt+"); //редактируем rt+ - открыть файл для чтения и записи, файл должен существовать.
+    if(fp == NULL) //проверили на доступ к файлу
+    {
+        printf("ERROR");// сообщение об ошибке
+        return 0; // конец программы
+    }
+    int  a, b;              // объявление
+    long pa, pb, la, lb;    // переменных
+ 
+    //позиция 1-ого слова
+    fscanf(fp, "%*[^a-zA-Z]");
+    pa = ftell(fp); // Возвращает значение указателя на текущую позицию файла. В случае ошибки возвращает число (-1).
+    fscanf(fp, "%*[a-zA-Z]");
+    la = ftell(fp) - pa;
+ 
+    // позиция 2-ого слова
+    fscanf(fp, "%*[^a-zA-Z]");
+    pb = ftell(fp); // Возвращает значение указателя на текущую позицию файла. В случае ошибки возвращает число (-1).
+    fscanf(fp, "%*[a-zA-Z]");
+    lb = ftell(fp) - pb;
+ 
+    // посимвольная перезапись(обмен)
+    for(long i = (la < lb) ? la : lb; i > 0L; --i){
+        fseek(fp, pa, SEEK_SET); // установка указателя на некоторую заданную позицию в файле функцией fseek(). 
+        a = fgetc(fp);
+ 
+        fseek(fp, pb, SEEK_SET);
+        b = fgetc(fp);
+        fseek(fp, -1L, SEEK_CUR);
+        fputc(a, fp); // Функция fputc() записывает символ ch в текущую позицию потока stream, a затем увеличивает указатель текущей позиции файла
+        pb = ftell(fp);
+ 
+        fseek(fp, pa, SEEK_SET);
+        fputc(b, fp);
+        pa = ftell(fp);
+    }
+ 
+    //если 2-ое слово больше 1-oго
+    long ia, ib;
+    if(lb > la) {
+        --pa;
+        for(long i = lb - la; i > 0L; --i, ++pa, ++pb) {
+             ib = pb;
+             fseek(fp, pb - 1, SEEK_SET);
+             while(pa < ib) {
+                  a = fgetc(fp);
+                  b = fgetc(fp);
+                  fseek(fp, -2L, SEEK_CUR);
+                  fputc(b, fp);
+                  fputc(a, fp);
+                  fseek(fp, -3L, SEEK_CUR);
+                  ib = ftell(fp);
+             }
+       }
+ 
+    } else if(la > lb) { // если 1-ое слово больше 2-oго
+ 
+        for(long i = la - lb; i > 0L; --i) {
+             ia = pa;
+             fseek(fp, pa, SEEK_SET);
+             while(ia < pb - 1) {
+                 a = fgetc(fp);
+                 b = fgetc(fp);
+                 fseek(fp, -2L, SEEK_CUR);
+                 fputc(b, fp);
+                 fputc(a, fp);
+                 fseek(fp, -1L, SEEK_CUR);
+                 ia = ftell(fp);
+            }
+       }
+    }
+ 
+    fclose(fp);
+    return 0;
+}
